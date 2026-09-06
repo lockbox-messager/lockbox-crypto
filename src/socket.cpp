@@ -13,14 +13,15 @@ int socket_main() {
     });
 
     // Get new uuid
-    server.Get("/uuid", [](const httplib::Request& req,
-                          httplib::Response& res) {
+    server.Get("/uuid", [](const httplib::Request&, httplib::Response& res) {
 
         std::cout << "UUID GENERATING\n";
         auto value = generate_uuid();
+        std::cout << "UUID GENERATED\n";
 
         res.set_content(value, "text/plain");
     });
+
     std::cout << "Cryptography server listening on port 3633...\n";
 
     // Listen on all local interfaces, port 3633
