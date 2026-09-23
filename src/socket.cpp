@@ -12,14 +12,18 @@ int socket_main() {
         );
     });
 
-    // Get new uuid
-    server.Get("/uuid", [](const httplib::Request&, httplib::Response& res) {
+    server.Get("/room-id", [](const httplib::Request&, httplib::Response& res) {
 
-        std::cout << "UUID GENERATING\n";
         auto value = generate_uuid();
-        std::cout << "UUID GENERATED\n";
 
-        res.set_content(value, "text/plain");
+        res.set_content("room-" + value, "text/plain");
+    });
+
+    server.Get("/user-id", [](const httplib::Request&, httplib::Response& res) {
+
+        auto value = generate_uuid();
+
+        res.set_content("user-" + value, "text/plain");
     });
 
     std::cout << "Cryptography server listening on port 3633...\n";
