@@ -1,38 +1,121 @@
-CXX := C:/mingw32/bin/g++.exe
+# ------------------------------------------------------------
+# Platform detection
+# ------------------------------------------------------------
+
+ifeq ($(OS),Windows_NT)
+    PLATFORM := windows
+else
+    PLATFORM := linux
+endif
+
+
+# ------------------------------------------------------------
+# Compiler
+# ------------------------------------------------------------
+
+ifeq ($(PLATFORM),windows)
+    CXX := g++
+    EXE := .exe
+    LDLIBS := -lws2_32
+else
+    CXX := g++
+    EXE :=
+    LDLIBS :=
+endif
+
+
+# ------------------------------------------------------------
+# Directories / target
+# ------------------------------------------------------------
 
 SRC_DIR := src
 BUILD_DIR := build
 BIN_DIR := bin
-TARGET := $(BIN_DIR)/crypto.exe
 
-CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic -O2 -D_WIN32_WINNT=0x0A00
+TARGET := $(BIN_DIR)/crypto$(EXE)
+
+
+# ------------------------------------------------------------
+# Compiler flags
+# ------------------------------------------------------------
+
+CXXFLAGS := -std=c++20 -Wall -Wextra -Wpedantic -O2
+
+ifeq ($(PLATFORM),windows)
+    CXXFLAGS += -D_WIN32_WINNT=0x0A00
+endif
+
 INCLUDES := -Iinclude
-LDLIBS := -lws2_32
+
+
+# ------------------------------------------------------------
+# Sources
+# ------------------------------------------------------------
 
 SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
+
 OBJECTS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
+
+
+# ------------------------------------------------------------
+# Targets
+# ------------------------------------------------------------
+
+.PHONY: all run clean rebuild
 
 all: $(TARGET)
 
+
+# ------------------------------------------------------------
+# Directories
+# ------------------------------------------------------------
+
 $(BUILD_DIR):
-	mkdir $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)
 
 $(BIN_DIR):
-	mkdir $(BIN_DIR)
+	mkdir -p $(BIN_DIR)
+
+
+# ------------------------------------------------------------
+# Compilation
+# ------------------------------------------------------------
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
+
+# ------------------------------------------------------------
+# Linking
+# ------------------------------------------------------------
+
 $(TARGET): $(OBJECTS) | $(BIN_DIR)
 	$(CXX) $(OBJECTS) -o $(TARGET) $(LDLIBS)
+
+
+# ------------------------------------------------------------
+# Run
+# ------------------------------------------------------------
 
 run: $(TARGET)
 	$(TARGET)
 
+
+# ------------------------------------------------------------
+# Clean
+# ------------------------------------------------------------
+
 clean:
+ifeq ($(PLATFORM),windows)
 	if exist "$(BUILD_DIR)" rmdir /s /q "$(BUILD_DIR)"
 	if exist "$(BIN_DIR)" rmdir /s /q "$(BIN_DIR)"
+else
+	rm -rf "$(BUILD_DIR)" "$(BIN_DIR)"
+endif
+
+
+# ------------------------------------------------------------
+# Rebuild
+# ------------------------------------------------------------
 
 rebuild: clean all
-
-.PHONY: all run clean rebuild
